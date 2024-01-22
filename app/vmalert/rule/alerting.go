@@ -446,7 +446,7 @@ func (ar *AlertingRule) exec(ctx context.Context, ts time.Time, limit int) ([]pr
 			a.KeepFiringSince = time.Time{}
 			continue
 		}
-		a, err := ar.newAlert(m, ls, start, qFn)
+		a, err := ar.newAlert(m, ls, ts, qFn)
 		if err != nil {
 			curState.Err = fmt.Errorf("failed to create alert: %w", err)
 			return nil, curState.Err
@@ -479,7 +479,7 @@ func (ar *AlertingRule) exec(ctx context.Context, ts time.Time, limit int) ([]pr
 				}
 				// alerts with ar.KeepFiringFor>0 may remain FIRING
 				// even if their expression isn't true anymore
-				if ts.Sub(a.KeepFiringSince) > ar.KeepFiringFor {
+				if ts.Sub(a.KeepFiringSince) >= ar.KeepFiringFor {
 					a.State = notifier.StateInactive
 					a.ResolvedAt = ts
 					ar.logDebugf(ts, a, "FIRING => INACTIVE: is absent in current evaluation round")
